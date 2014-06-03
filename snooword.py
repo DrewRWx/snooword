@@ -34,7 +34,7 @@ comments = s.get_comments(limit=None)
 l = []
 
 # One liner to add subreddit flair text if it exists.
-ifflair = lambda s: ' ('+s+')' if s else ''
+ifflair = lambda s: ' ('+s+')' if (s != '') else ''
 
 # The report is peppered with Markdown and contains the newest posts in the subreddit that KEYWORDS occur in:
 # _ TITLE _
@@ -57,13 +57,16 @@ for comment in comments:
 		l.append('')
 
 # mad(1) needs to read from a file, so put it in a temp directory.
-f = tempfile.NamedTemporaryFile()
+f = tempfile.NamedTemporaryFile(delete=False)
 # Join all the strings as individual lines and avoid an ascii error.
 f.write("\n".join(l).encode("utf-8"))
+# Close tempfile after it is written to.
+f.close()
 
 # Run the mad(1) markdown in the submodule relative to the script's directory.
 dirpath = os.path.abspath(os.path.join(os.path.realpath(__file__), os.pardir))+"/"
 call([dirpath+"mad/bin/mad", f.name])
 
-# Close tempfile after it is read by mad(1).
-f.close()
+# Cleanup tempfile.
+call(["rm", f.name])
+
